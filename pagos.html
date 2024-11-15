@@ -1,0 +1,2097 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla de Servicios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #ffffff;
+            color: #333333;
+            padding-bottom: 60px;
+            padding-top: 0px;
+        }
+
+        * {
+            transition: background-color 1s, color 1s, border-color 1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #f8f8f8;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            display: none;
+        }
+
+        body:not(.in-history) .top-bar {
+            display: flex;
+        }
+
+        .top-bar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            display: none;
+        }
+
+        .title-arrow {
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 10px 10px 11px 10px;
+            user-select: none;
+        }
+
+        .top-bar-title[data-section="#tabla"] {
+            display: none !important;
+        }
+
+        .top-bar-title.visible {
+            display: block;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f8f8f8;
+            padding: 5px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 2001;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav a:not(.middle-btn) {
+            padding: 5px 15px;
+            width: 25%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav a:first-child {
+            margin-right: auto;
+            justify-content: flex-start;
+            padding-left: 8%;
+        }
+
+        .nav a:last-child {
+            margin-left: auto;
+            justify-content: flex-end;
+            padding-right: 8%;
+        }
+
+        .nav::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;  
+            width: 6%; /* Adjusted to be a bit larger */
+            height: 7px; /* Adjusted height */
+            background-color: #007bff;
+            transition: left 0.5s ease, width 0.3s ease; 
+            border-radius: 5px 5px 0 0;
+            transform: translateX(-46%); /* Adjusted to keep centered with a bit of extension */
+        }
+
+        .nav.at-history::after {
+            left: 13%; 
+        }
+
+        .nav.at-settings::after {
+            left: 86.5%; /* Adjusted so it doesn't go too far to the right */
+        }
+
+        .nav.at-pay::after {
+            width: 0;
+        }
+
+        .nav img {
+            width: 30px; /* Enlarge historial and ajustes icons */
+            height: 30px; /* Enlarge historial and ajustes icons */
+            vertical-align: middle;
+        }
+
+        .nav .middle-btn {
+            position: relative; 
+            width: 40px;
+            height: 40px;
+            background-color: #007bff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 3px solid white;
+        }
+
+        .middle-btn .circle-animation {
+            position: absolute;
+            background-color: #333;
+            border-radius: 50%;
+            width: 0;
+            height: 0;
+            transition: width 0.6s ease-in-out, height 0.6s ease-in-out, opacity 0.6s ease-in-out;
+            opacity: 0;
+        }
+
+        .middle-btn.active .circle-animation {
+            width: 80px;  
+            height: 80px; 
+            opacity: 0.2;
+        }
+
+        .nav .middle-btn span {
+            color: white;
+            font-size: 20px;
+            line-height: 1;
+            transform: none;
+        }
+
+        #tabla {
+            position: relative;
+            padding-top: 0;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0 20px 0;
+        }
+
+        #servicios .button-container {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 50px;
+            z-index: 1000;
+            background-color: white;
+            padding: 10px 0;
+            margin: 0 0 20px 0;
+        }
+
+        .search-container {
+            width: auto;
+            flex: 0 1 auto;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 100px;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+            margin: 0;
+            display: block;
+            height: fit-content;
+        }
+
+        #pay-another-month-btn {
+            width: auto;
+            flex: 0 1 auto;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9em;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            margin: 0;
+            margin-left: auto;
+            display: block;
+            color: #333333;
+            height: fit-content;
+        }
+
+        #toggle-full-table {
+            width: auto;
+            flex: 0 1 auto;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9em;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            margin: 0;
+            color: #333333;
+            height: fit-content;
+        }
+
+        .table-container {
+            max-height: 290px;
+            overflow-y: auto;
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 0;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            display: none;
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .table-container.visible {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .summary-table-container {
+            max-height: 290px;
+            overflow-y: auto;
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 0;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            transition: all 0.3s ease-in-out;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .summary-table-container.hidden {
+            opacity: 0;
+            transform: translateX(-100%);
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 470px;
+        }
+
+        .summary-table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 270px;
+        }
+
+        th, td {
+            border: 0px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 1em;
+        }
+
+        .summary-table th, .summary-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 1em;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th:first-child, td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: #ffffff;
+            z-index: 1;
+            border-right: 1px solid #ddd;
+            box-shadow: none;
+            padding: 8px;
+            margin-left: 0;
+            width: auto;
+        }
+
+        tfoot tr {
+            position: sticky;
+            bottom: 0;
+            background-color: #e0e0e0;
+            z-index: 10;
+        }
+
+        tfoot tr td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: #e0e0e0;
+            z-index: 1;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        th:first-child {
+            z-index: 11;
+            background-color: #f2f2f2;
+        }
+
+        tbody tr td:first-child {
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+        }
+
+        section {
+            margin-top: 20px;
+            padding: 10px;
+            border: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .service-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #fafafa;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-service-btn,
+        .edit-services-btn {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .add-service-btn:hover,
+        .edit-services-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .service-form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        .service-form input {
+            margin-bottom: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .pay-btn,
+        .check-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .amount-input,
+        .save-payment-btn {
+            display: block;
+            margin-top: 5px;
+        }
+
+        .amount-input {
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 4px;
+            width: 100px;
+        }
+
+        .save-payment-btn {
+            background-color: #ffc107;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: black;
+            text-align: center;
+        }
+
+        .paid {
+            color: #333;
+        }
+
+        .service-card.paid {
+            background-color: #f8f8f8;
+        }
+
+        .paid-check {
+            color: green;
+            font-size: 1.2em;
+        }
+
+        tfoot tr {
+            font-weight: bold;
+            background-color: #e0e0e0;
+        }
+
+        .current-month {
+            background-color: inherit;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 15px 0 5px 0;
+            position: relative;
+            display: block;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            right: 0;
+            bottom: -20px;
+            font-size: 12px;
+            color: #666;
+            width: 100%;
+        }
+
+        .progress-text .pending-services {
+            text-align: right;
+        }
+
+        .progress-text .pending-amount {
+            text-align: left;
+        }
+
+        body.circle-visible .progress-container {
+            display: block;
+        }
+
+        .reset-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .reset-btn:hover {
+            background-color: #c82333;
+        }
+
+        .password-input {
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        #edit-services-section {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1999;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        #edit-services-section .service-card {
+            margin: 0;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid #eee;
+            background-color: white;
+        }
+
+        #edit-services-section .service-card:last-child {
+            border-bottom: none;
+        }
+
+        #edit-services-section .delete-btn {
+            padding: 8px 12px;
+        }
+
+        #add-services-section {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1999;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        #add-services-section .service-form {
+            margin-top: 20px;
+        }
+
+        #add-services-section input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #add-services-section button {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav a:focus {
+            outline: none;
+        }
+
+        .nav a:active {
+            background: none;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .date-header {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .service-increase-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #333;
+        }
+
+        #ajustes .add-service-btn,
+        #ajustes .edit-services-btn,
+        #ajustes .reset-btn,
+        #ajustes .preguntas-frecuentes-btn,
+        #ajustes .informes-ai-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            padding: 15px;
+            margin: 0;
+            border: none;
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        #ajustes .add-service-btn img,
+        #ajustes .edit-services-btn img,
+        #ajustes .reset-btn img,
+        #ajustes .preguntas-frecuentes-btn img,
+        #ajustes .informes-ai-btn img {
+            margin-right: 15px;
+        }
+
+        #ajustes .add-service-btn:hover,
+        #ajustes .edit-services-btn:hover,
+        #ajustes .reset-btn:hover,
+        #ajustes .preguntas-frecuentes-btn:hover,
+        #ajustes .informes-ai-btn:hover {
+            background-color: #f8f8f8;
+        }
+
+        #ajustes {
+            padding: 50px 0 0 0 !important;
+        }
+
+        #ajustes h2 {
+            display: inline-block;
+            margin-left: 50px;
+            margin-top: 20px;
+        }
+
+        #ajustes p {
+            padding: 20px;
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        #informes-ai-section,
+        #preguntas-frecuentes-section {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .faq-container {
+            margin-top: 20px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+
+        .faq-item h3 {
+            margin-bottom: 10px;
+        }
+
+        .toggle-table-btn .arrow {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        #select-service,
+        #select-month {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1.2em;
+            background-color: #f8f8f8;
+            height: 45px;
+        }
+
+        #select-service-amount {
+            font-size: 1.2em;
+            height: 45px;
+            margin: 15px 0;
+        }
+
+        #save-month-payment-btn {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #save-month-payment-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #pagar-otro-mes-section {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1999;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        #pay-another-month-section h1.top-bar-title {
+            display: none; 
+        }
+
+        #summary-total {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+
+        .modal-content button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .modal-content .delete-all-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-content .delete-service-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-content .cancel-btn {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .empty-state img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state.success {
+            color: #4CAF50;
+        }
+
+        .empty-state.success img {
+            opacity: 1;
+        }
+
+        /* New CSS for red notification circle */
+        .red-notification {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body class="circle-visible">
+    <div class="top-bar">
+        <h1 class="top-bar-title invisible" data-section="#tabla"><span class="title-arrow">←</span>Historial</h1>
+        <h1 class="top-bar-title" data-section="#servicios"><span class="title-arrow">←</span>Pagar</h1>
+        <h1 class="top-bar-title" data-section="#ajustes"><span class="title-arrow">←</span>Ajustes</h1>
+        <h1 class="top-bar-title" data-section="#edit-services-section"><span class="title-arrow">←</span>Editar Servicios</h1>
+        <h1 class="top-bar-title" data-section="#add-services-section"><span class="title-arrow">←</span>Agregar Servicios</h1>
+        <h1 class="top-bar-title" data-section="#pagar-otro-mes-section"><span class="title-arrow">←</span>Pagar Otro Mes</h1>
+        <h1 class="top-bar-title" data-section="#informes-ai-section"><span class="title-arrow">←</span>¿Qué hay de nuevo?</h1>
+        <h1 class="top-bar-title" data-section="#preguntas-frecuentes-section"><span class="title-arrow">←</span>Preguntas Frecuentes</h1>
+    </div>
+    <div id="tabla">
+        <h2 class="date-header"></h2>
+        
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="progress-text">
+                <span class="pending-amount"></span>
+                <span class="pending-services"></span>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Buscar...">
+            </div>
+            <button id="toggle-full-table" class="toggle-table-btn">
+                Todos los meses
+            </button>
+        </div>
+
+        <div class="summary-table-container">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Servicios</th>
+                        <th>Pagos</th>
+                    </tr>
+                </thead>
+                <tbody id="summary-table-body">
+                    <tr>
+                        <td>Internet</td>
+                        <td data-timestamp="1685000000000">$200</td>
+                    </tr>
+                    <tr>
+                        <td>Luz</td>
+                        <td data-timestamp="1685010000000">$150</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <td style="text-align: right;"><strong>Total: $<span id="summary-total">0.00</span></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Servicio/Mes</th>
+                        <th>Enero</th>
+                        <th>Febrero</th>
+                        <th>Marzo</th>
+                        <th>Abril</th>
+                        <th>Mayo</th>
+                        <th>Junio</th>
+                        <th>Julio</th>
+                        <th>Agosto</th>
+                        <th>Septiembre</th>
+                        <th>Octubre</th>
+                        <th>Noviembre</th>
+                        <th>Diciembre</th>
+                    </tr>
+                </thead>
+                <tbody id="services-table-body">
+                </tbody>
+                <tfoot>
+                    <tr id="monthly-totals">
+                        <td>Total</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div id="service-increase-info">
+            Servicio con mayor aumento este mes: <span id="service-increase-name">n/a</span>
+        </div>
+    </div>
+
+    <section id="servicios" class="hidden" style="padding-top: 50px;">
+        <div class="button-container">
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Buscar..." id="pay-section-search">
+                </div>
+                <button id="pay-another-month-btn" class="add-service-btn">Pagar otro mes</button>
+            </div>
+        </div>
+        <div id="pay-another-month-section" class="hidden">
+        </div>
+        <div id="service-list"></div>
+        <div class="empty-state" style="display: none;">
+            <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+            <p>No hay servicios cargados.<br>Agrega servicios desde la sección Ajustes.</p>
+        </div>
+
+        <h3 style="font-weight: bold; margin-top: 20px;">Servicios Pagados</h3>
+        <div id="paid-service-list"></div>
+        <div class="empty-state" style="display: none;">
+            <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+            <p>No hay servicios pagados.<br>Realiza pagos desde la sección de servicios.</p>
+        </div>
+    </section>
+
+    <section id="ajustes" class="hidden">
+        <button class="add-service-btn" id="add-service-btn">
+            <img src="https://img.icons8.com/fluency/48/add-file.png" alt="add" width="20" height="20" style="vertical-align: middle; margin-right: 10px;">
+            Agregar Servicio
+        </button>
+        <button class="edit-services-btn" id="edit-services-btn">
+            <img src="https://img.icons8.com/fluency/48/edit-file.png" alt="edit" width="20" height="20" style="vertical-align: middle; margin-right: 10px;">
+            Editar Servicios
+        </button>
+        <button class="preguntas-frecuentes-btn" id="preguntas-frecuentes-btn">
+            <img src="https://img.icons8.com/fluency/48/help.png" alt="Ayuda" width="20" height="20" style="vertical-align: middle; margin-right: 10px;">
+            Preguntas Frecuentes
+        </button>
+        <button class="informes-ai-btn" id="informes-ai-btn">
+            <img src="https://img.icons8.com/fluency/48/artificial-intelligence.png" alt="AI" width="20" height="20" style="vertical-align: middle; margin-right: 10px;">
+            ¿Qué hay de nuevo?
+        </button>
+        <button class="reset-btn" id="reset-btn">
+            <img src="https://img.icons8.com/fluency/48/restart.png" alt="reset" width="20" height="20" style="vertical-align: middle; margin-right: 10px;">
+            Reiniciar Todo
+        </button>
+        
+        <p>Aquí puedes modificar tus ajustes y preferencias.</p>
+        <div id="edit-services-section" class="hidden"></div>
+        <div class="empty-state" style="display: none;">
+            <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+            <p>No hay servicios para editar.<br>Agrega servicios desde la sección Ajustes.</p>
+        </div>
+    </section>
+
+    <section id="informes-ai-section" class="hidden">
+        <h2>¿Qué hay de nuevo?</h2>
+        <div style="padding: 20px;">
+            <h3>Últimos Cambios:</h3>
+            <ul style="line-height: 1.6;">
+                <li>Arreglado que el título "Pagar Otro Mes" se muestre correctamente en la barra superior al entrar en esa sección.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="preguntas-frecuentes-section" class="hidden">
+        <h2>Preguntas Frecuentes</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <h3>¿Cómo funciona esta app?</h3>
+                <p>Esta aplicación te ayuda a gestionar tus servicios y pagos de manera sencilla.</p>
+            </div>
+            <div class="faq-item">
+                <h3>¿Cómo agrego un nuevo servicio?</h3>
+                <p>Ve a Ajustes > Agregar Servicio y escribe el nombre del servicio.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="pagar-otro-mes-section" class="hidden">
+        <h2>Pagar Otro Mes</h2>
+        <div id="pay-another-month-dropdown"></div>
+    </section>
+
+    <nav class="nav">
+        <a href="#tabla">
+            <img src="https://img.icons8.com/fluency/48/time-machine.png" alt="Historial icono" width="30" height="30">
+        </a>
+        <a href="#servicios" class="middle-btn">
+            <span>$</span>
+            <div class="circle-animation"></div>
+        </a>
+        <a href="#ajustes">
+            <img src="https://img.icons8.com/fluency/48/settings.png" alt="Ajustes icono" width="30" height="30">
+        </a>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const formatNumber = (input) => {
+                let value = input.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                let parts = value.split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts[1];
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                input.value = decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
+            };
+
+            const formatNumberWithCommas = (number) => {
+                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            };
+
+            const addRecentPaymentIndicator = () => {
+                const currentTime = new Date().getTime();
+                const oneDayMillis = 24 * 60 * 60 * 1000;
+
+                document.querySelectorAll('#services-table-body td').forEach(cell => {
+                    if (cell.textContent.includes('$')) {
+                        const paymentTime = cell.getAttribute('data-timestamp');
+
+                        if (paymentTime && (currentTime - paymentTime < oneDayMillis)) {
+                            const notification = document.createElement('div');
+                            notification.className = 'red-notification';
+                            cell.appendChild(notification);
+                        }
+                    }
+                });
+            };
+
+            const updateNavIndicator = (section) => {
+                const nav = document.querySelector('.nav');
+                nav.classList.remove('at-history', 'at-pay', 'at-settings');
+
+                if (section.includes('tabla')) {
+                    nav.classList.add('at-history');
+                } else if (section.includes('servicios')) {
+                    const payButton = document.querySelector('.middle-btn');
+                    payButton.classList.add('active');
+                    setTimeout(() => payButton.classList.remove('active'), 600);
+                } else if (section.includes('ajustes')) {
+                    nav.classList.add('at-settings');
+                }
+            };
+
+            const months = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            const now = new Date();
+            const currentMonth = months[now.getMonth()];
+            const currentYear = 2024;
+            document.querySelector('.date-header').textContent = `${currentMonth} ${currentYear}`;
+            let isFormVisible = false;
+
+            const saveData = () => {
+                const services = [];
+                document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card').forEach(card => {
+                    services.push({
+                        name: card.childNodes[0].textContent.trim(),
+                        isPaid: card.closest('#paid-service-list') !== null
+                    });
+                });
+
+                const payments = [];
+                document.querySelectorAll('#services-table-body tr').forEach(row => {
+                    const serviceName = row.firstChild.textContent.trim();
+                    const monthlyPayments = Array.from(row.children)
+                        .slice(1)
+                        .map(cell => {
+                            const amountMatch = cell.querySelector('.payment-amount')?.textContent.match(/\$?([\d.]+)/);
+                            return amountMatch ? parseFloat(amountMatch[1]) : null;
+                        });
+                    payments.push({ serviceName, monthlyPayments });
+                });
+
+                localStorage.setItem('servicesData', JSON.stringify({
+                    services,
+                    payments
+                }));
+            };
+
+            const loadSavedData = () => {
+                const savedData = localStorage.getItem('servicesData');
+                if (!savedData) return;
+
+                const data = JSON.parse(savedData);
+
+                data.services.forEach(service => {
+                    const card = originalCreateServiceCard(service.name);
+                    const targetList = service.isPaid ? 
+                        document.getElementById('paid-service-list') : 
+                        document.getElementById('service-list');
+                    
+                    if (service.isPaid) {
+                        card.classList.add('paid');
+                        const checkmark = document.createElement('span');
+                        checkmark.className = 'paid-check';
+                        checkmark.innerHTML = ' ✔';
+                        checkmark.style.color = 'green';
+                        card.appendChild(checkmark);
+                        card.querySelector('.pay-btn')?.remove();
+                    }
+                    targetList.appendChild(card);
+                });
+
+                data.payments.forEach(payment => {
+                    let row = document.createElement('tr');
+                    const serviceCell = document.createElement('td');
+                    serviceCell.textContent = payment.serviceName;
+                    row.appendChild(serviceCell);
+
+                    payment.monthlyPayments.forEach((amount, index) => {
+                        const cell = document.createElement('td');
+                        row.appendChild(cell);
+                        if (amount !== null) {
+                            updateTableCell(row, index, amount);
+                        } else {
+                            cell.textContent = '-';
+                        }
+                    });
+
+                    document.getElementById('services-table-body').appendChild(row);
+                });
+
+                calculateMonthlyTotals();
+                updateCurrentMonthSummaryTable();
+                updateProgress();
+                updateEmptyStates();
+                addRecentPaymentIndicator();
+            };
+
+            const updateEmptyStates = () => {
+                const serviceList = document.getElementById('service-list');
+                const paidServiceList = document.getElementById('paid-service-list');
+                
+                if (!serviceList.children.length && !paidServiceList.children.length) {
+                    serviceList.innerHTML = `
+                        <div class="empty-state">
+                            <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+                            <p>No hay servicios cargados.<br>Agrega servicios desde la sección Ajustes.</p>
+                        </div>
+                    `;
+                } else if (!document.querySelectorAll('#service-list .service-card').length) {
+                    serviceList.innerHTML = `
+                        <div class="empty-state success">
+                            <img src="https://img.icons8.com/fluency/96/ok.png" alt="check mark">
+                            <p>¡Felicitaciones!<br>Todos los servicios están pagados este mes.</p>
+                        </div>
+                    `;
+                } else {
+                    const emptyState = serviceList.querySelector('.empty-state');
+                    if (emptyState) {
+                        emptyState.remove();
+                    }
+                }
+            };
+
+            const resetInputs = () => {
+                document.getElementById('select-month').value = '';
+                document.getElementById('select-service-amount').value = '';
+                document.getElementById('select-service').value = '';
+            };
+
+            const calculatePercentageChange = (currentAmount, previousAmount) => {
+                if (!previousAmount) return null;
+                const current = parseFloat(currentAmount);
+                const previous = parseFloat(previousAmount);
+                if (isNaN(current) || isNaN(previous) || previous === 0) return null;
+                if (current === previous) return 0;
+                return ((current - previous) / previous) * 100;
+            };
+
+            const createMonthDropdown = (selectedIndex) => {
+                const monthSelect = document.createElement('select');
+                for (let i = 0; i < 12; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = document.querySelectorAll('th')[i + 1].textContent;
+                    if (i === selectedIndex) {
+                        option.selected = true;
+                    }
+                    monthSelect.appendChild(option);
+                }
+                return monthSelect;
+            };
+
+            const updateTableCell = (row, monthIndex, amount) => {
+                const cell = row.children[monthIndex + 1];
+                const previousMonth = monthIndex > 0 ? row.children[monthIndex].textContent : null;
+                const previousAmount = previousMonth ? parseFloat(previousMonth.replace(/[^0-9.-]+/g, '')) : null;
+                const percentChange = calculatePercentageChange(amount, previousAmount);
+                
+                let percentageHtml = '';
+                if (percentChange !== null) {
+                    const isIncrease = percentChange > 0;
+                    const arrow = isIncrease ? '⬆' : '⬇';
+                    const color = isIncrease ? '#4CAF50' : '#f44336';
+                    percentageHtml = `<span style="color: ${color}; font-size: 0.8em;">${arrow}${Math.abs(percentChange).toFixed(1)}%</span>`;
+                }
+                
+                cell.innerHTML = amount ? `<span class="payment-amount">$${amount}</span> ${percentageHtml}` : '-';
+                cell.setAttribute('data-timestamp', Date.now());
+                calculateMonthlyTotals();
+                updateCurrentMonthSummaryTable();
+                updateProgress();
+                findServiceWithHighestIncrease();
+            };
+
+            const addPayButtonToServiceCard = (serviceCard, serviceName) => {
+                const payButton = document.createElement('button');
+                payButton.textContent = 'Pagar';
+                payButton.className = 'pay-btn';
+                payButton.addEventListener('click', function () {
+                    paymentInputDisplay(serviceCard, serviceName);
+                    payButton.remove(); 
+                });
+
+                serviceCard.appendChild(payButton);
+            };
+
+            const paymentInputDisplay = (serviceCard, serviceName) => {
+                const amountInput = document.createElement('input');
+                amountInput.type = 'text'; 
+                amountInput.placeholder = 'Monto pagado';
+                amountInput.className = 'amount-input';
+                amountInput.inputMode = 'numeric'; 
+                amountInput.pattern = '[0-9]*';    
+                amountInput.style.display = 'block';
+                amountInput.autofocus = true; 
+                amountInput.addEventListener('input', () => formatNumber(amountInput));
+                setTimeout(() => amountInput.focus(), 0); 
+
+                const savePaymentButton = document.createElement('button');
+                savePaymentButton.textContent = 'Guardar';
+                savePaymentButton.className = 'save-payment-btn';
+                savePaymentButton.style.display = 'block';
+                savePaymentButton.addEventListener('click', function () {
+                    const amountValue = amountInput.value.replace(/,/g, '');
+                    if (amountValue) {
+                        let existingRow = Array.from(document.querySelectorAll('#services-table-body tr'))
+                            .find(row => row.firstChild && row.firstChild.textContent.trim() === serviceName.trim());
+                        if (!existingRow) {
+                            existingRow = document.createElement('tr');
+                            const serviceNameTd = document.createElement('td');
+                            serviceNameTd.textContent = serviceName;
+                            existingRow.appendChild(serviceNameTd);
+                            for (let i = 0; i < 12; i++) {
+                                const monthTd = document.createElement('td');
+                                monthTd.textContent = '$0';
+                                existingRow.appendChild(monthTd);
+                            }
+                            document.getElementById('services-table-body').appendChild(existingRow);
+                        }
+                        const currentMonth = new Date().getMonth();
+                        updateTableCell(existingRow, currentMonth, amountValue);
+
+                        const checkmark = document.createElement('span');
+                        checkmark.className = 'paid-check';
+                        checkmark.innerHTML = ' ✔';
+                        checkmark.style.color = 'green';
+                        serviceCard.classList.add('paid');
+                        serviceCard.appendChild(checkmark);
+
+                        const paidServiceList = document.getElementById('paid-service-list');
+                        serviceCard.remove();
+                        paidServiceList.appendChild(serviceCard);
+                        amountInput.remove();
+                        savePaymentButton.remove();
+                        saveData();
+                        calculateMonthlyTotals();
+                        updateEmptyStates();
+                        addRecentPaymentIndicator();
+                    }
+                });
+
+                serviceCard.appendChild(amountInput);
+                serviceCard.appendChild(savePaymentButton);
+            };
+
+            const originalCreateServiceCard = (serviceName) => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card';
+                serviceCard.innerText = `${serviceName}`;
+                addPayButtonToServiceCard(serviceCard, serviceName);
+                return serviceCard;
+            };
+
+            const populateServiceDropdown = () => {
+                const serviceDropdown = document.getElementById('select-service');
+                
+                if (!serviceDropdown) {
+                    console.error('Service dropdown element not found');
+                    return;
+                }
+
+                while (serviceDropdown.options.length > 1) {
+                    serviceDropdown.remove(1);
+                }
+
+                const activeServices = Array.from(
+                    document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card')
+                ).map(card => card.childNodes[0].textContent.trim());
+
+                activeServices.forEach(serviceName => {
+                    const option = document.createElement('option');
+                    option.value = serviceName;
+                    option.textContent = serviceName;
+                    serviceDropdown.appendChild(option);
+                });
+            };
+
+            const updateCurrentMonthSummaryTable = () => {
+                const currentMonthIndex = new Date().getMonth();
+                const summaryBody = document.getElementById('summary-table-body');
+                summaryBody.innerHTML = '';
+                let total = 0;
+                let previousMonthTotal = 0;
+
+                const serviceRows = document.querySelectorAll('#services-table-body tr');
+                serviceRows.forEach(row => {
+                    const previousMonthCell = row.children[currentMonthIndex]; 
+                    const amountText = previousMonthCell?.textContent.match(/(\d+[,.]?\d*)/);
+                    if (amountText && parseFloat(amountText[1]) > 0) {
+                        previousMonthTotal += parseFloat(amountText[1].replace(/,/g, ''));
+                    }
+                });
+
+                serviceRows.forEach(row => {
+                    const serviceName = row.children[0].textContent.trim();
+                    const amountCell = row.children[currentMonthIndex + 1];
+                    const amountText = amountCell.textContent.match(/(\d+[,.]?\d*)/);
+                    if (amountText && parseFloat(amountText[1]) > 0) {
+                        const previousMonth = currentMonthIndex > 0 ? row.children[currentMonthIndex].textContent : null;
+                        const previousAmount = previousMonth ? parseFloat(previousMonth.replace(/[^0-9.-]+/g, '')) : null;
+                        const percentChange = calculatePercentageChange(amountText[1], previousAmount);
+                        let percentageHtml = '';
+                        if (percentChange !== null) {
+                            const isIncrease = percentChange > 0;
+                            const arrow = isIncrease ? '⬆' : '⬇';
+                            const color = isIncrease ? '#4CAF50' : '#f44336';
+                            percentageHtml = `<span style="color: ${color}; font-size: 0.8em;">${arrow}${Math.abs(percentChange).toFixed(1)}%</span>`;
+                        }
+
+                        const currentAmount = parseFloat(amountText[1]);
+                        total += currentAmount;
+
+                        const summaryRow = document.createElement('tr');
+                        const serviceCell = document.createElement('td');
+                        serviceCell.textContent = serviceName;
+                        const paymentCell = document.createElement('td');
+                        paymentCell.innerHTML = `$${formatNumberWithCommas(currentAmount.toFixed(2))} ${percentageHtml}`;
+                        
+                        summaryRow.appendChild(serviceCell);
+                        summaryRow.appendChild(paymentCell);
+                        summaryBody.appendChild(summaryRow);
+                    }
+                });
+
+                const percentChange = calculatePercentageChange(total, previousMonthTotal);
+                let totalPercentageHtml = '';
+                if (percentChange !== null) {
+                    const isIncrease = percentChange > 0;
+                    const arrow = isIncrease ? '⬆' : '⬇';
+                    const color = isIncrease ? '#4CAF50' : '#f44336';
+                    totalPercentageHtml = `<span style="color: ${color}; font-size: 0.8em;">${arrow}${Math.abs(percentChange).toFixed(1)}%</span>`;
+                }
+
+                document.getElementById('summary-total').innerHTML = 
+                    `${formatNumberWithCommas(total.toFixed(2))} ${totalPercentageHtml}`;
+            };
+
+            const findServiceWithHighestIncrease = () => {
+                const currentMonthIndex = new Date().getMonth() + 1;
+                let maxIncrease = -Infinity;
+                let serviceWithMaxIncrease = "n/a";
+
+                const serviceRows = document.querySelectorAll('#services-table-body tr');
+                serviceRows.forEach(row => {
+                    const serviceName = row.children[0].textContent.trim();
+                    const currentMonthCell = row.children[currentMonthIndex];
+                    const previousMonthCell = currentMonthIndex > 1 ? row.children[currentMonthIndex - 1] : row.children[12];
+
+                    const currentAmount = parseFloat(currentMonthCell.querySelector('.payment-amount')?.textContent.match(/\d+/)?.[0] || 0);
+                    const previousAmount = parseFloat(previousMonthCell.querySelector('.payment-amount')?.textContent.match(/\d+/)?.[0] || 0);
+
+                    if (previousAmount > 0) {
+                        const percentIncrease = ((currentAmount - previousAmount) / previousAmount) * 100;
+                        if (percentIncrease > maxIncrease) {
+                            maxIncrease = percentIncrease;
+                            serviceWithMaxIncrease = serviceName;
+                        }
+                    }
+                });
+
+                const increaseInfoElement = document.getElementById('service-increase-name');
+                increaseInfoElement.textContent = serviceWithMaxIncrease;
+            };
+
+            const updateProgress = () => {
+                const allServices = document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card').length;
+                const paidServices = document.querySelectorAll('#paid-service-list .service-card').length;
+                const unpaidServices = document.querySelectorAll('#service-list .service-card');
+
+                const serviceList = document.getElementById('service-list');
+                if (allServices === 0) {
+                    serviceList.innerHTML = `
+                        <div class="empty-state">
+                            <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+                            <p>No hay servicios cargados.<br>Agrega servicios desde la sección Ajustes.</p>
+                        </div>
+                    `;
+                } else if (unpaidServices.length === 0) {
+                    serviceList.innerHTML = `
+                        <div class="empty-state success">
+                            <img src="https://img.icons8.com/fluency/96/ok.png" alt="check mark">
+                            <p>¡Felicitaciones!<br>Todos los servicios están pagados este mes.</p>
+                        </div>
+                    `;
+                }
+
+                const percentage = Math.round((paidServices / allServices) * 100);
+                const remainingServices = allServices - paidServices;
+
+                let pendingAmount = 0;
+                const currentMonth = new Date().getMonth();
+                const rows = document.querySelectorAll('#services-table-body tr');
+                const unpaidServicesList = document.querySelectorAll('#service-list .service-card');
+                
+                unpaidServicesList.forEach(service => {
+                    const serviceName = service.childNodes[0].textContent.trim();
+                    const row = Array.from(rows).find(r => r.firstChild.textContent.trim() === serviceName);
+                    if (row) {
+                        for(let i = currentMonth - 1; i >= 0; i--) {
+                            const cell = row.children[i + 1];
+                            const amountMatch = cell.textContent.match(/\$?([\d.]+)/);
+                            if (amountMatch) {
+                                pendingAmount += parseFloat(amountMatch[1]);
+                                break;
+                            }
+                        }
+                        if (currentMonth === 0) {
+                            const decemberCell = row.children[12];
+                            const amountMatch = decemberCell.textContent.match(/\$?([\d.]+)/);
+                            if (amountMatch) {
+                                pendingAmount += parseFloat(amountMatch[1]);
+                            }
+                        }
+                    }
+                });
+                
+                const progressBar = document.querySelector('.progress-bar');
+                const progressText = document.querySelector('.progress-text');
+                
+                progressBar.style.width = `${percentage}%`;
+                if (percentage === 100) {
+                    progressText.innerHTML = `
+                        <span class="pending-amount">Pagos completos!</span>
+                        <span class="pending-services" style="font-size: 0.9em; color: blue;">Felicidades!</span>
+                    `;
+                } else {
+                    progressText.innerHTML = `
+                        <span class="pending-amount">
+                            ${pendingAmount > 0 ? 
+                                `Falta pagar: $${formatNumberWithCommas(pendingAmount.toFixed(2))}` : 
+                                `Falta pagar: ...`}
+                        </span>
+                        <span class="pending-services">
+                            ${remainingServices} servicio${remainingServices !== 1 ? 's' : ''} por pagar este mes
+                        </span>
+                    `;
+                }
+            };
+
+            const calculateMonthlyTotals = () => {
+                const totals = Array(12).fill(0);
+                const rows = document.querySelectorAll('#services-table-body tr');
+
+                rows.forEach(row => {
+                    Array.from(row.children).slice(1).forEach((cell, index) => {
+                        const amountMatch = cell.textContent.trim().match(/^\$([\d,]+(?:\.\d{1,2})?)/);
+                        const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 0;
+
+                        totals[index] += amount;
+                    });
+                });
+
+                const totalRow = document.getElementById('monthly-totals');
+                totalRow.innerHTML = '<td>Total</td>' + totals.map((total, index) => {
+                    const previousTotal = index > 0 ? totals[index - 1] : null;
+                    const percentChange = calculatePercentageChange(total, previousTotal);
+                    let percentageHtml = '';
+                    if (percentChange !== null) {
+                        const isIncrease = percentChange > 0;
+                        const arrow = isIncrease ? '⬆' : '⬇';
+                        const color = isIncrease ? '#4CAF50' : '#f44336';
+                        percentageHtml = `<span style="color: ${color}; font-size: 0.8em;">${arrow}${Math.abs(percentChange).toFixed(1)}%</span>`;
+                    }
+                    return total > 0 ? 
+                        `<td>$${formatNumberWithCommas(total.toFixed(2))} ${percentageHtml}</td>` : 
+                        '<td>-</td>';
+                }).join('');
+                
+                updateProgress();
+                findServiceWithHighestIncrease();
+                updateEmptyStates();
+            };
+
+            const tableContainer = document.querySelector('.table-container');
+            const fullTableContainer = tableContainer;
+            const summaryContainer = document.querySelector('.summary-table-container');
+            const toggleTableBtn = document.getElementById('toggle-full-table');
+
+            toggleTableBtn.addEventListener('click', function() {
+                fullTableContainer.classList.toggle('visible');
+                summaryContainer.classList.toggle('hidden');    
+                this.classList.toggle('active');
+                this.innerHTML = fullTableContainer.classList.contains('visible') ? 
+                    'Ver mes actual' : 'Todos los meses';
+            });
+
+            const thElements = document.querySelectorAll('th');
+            const currentMonthIndex = new Date().getMonth() + 1;
+            thElements.forEach((th, index) => {
+                if (index === currentMonthIndex) {
+                    th.classList.add('current-month');
+                }
+            });
+
+            const currentMonthHeader = document.querySelector(`th:nth-child(${currentMonthIndex + 1})`);
+            if (currentMonthHeader) {
+                document.querySelector('.table-container').scrollLeft = currentMonthHeader.offsetLeft;
+            }
+
+            loadSavedData();
+            calculateMonthlyTotals();
+            updateCurrentMonthSummaryTable();
+            updateProgress();
+            findServiceWithHighestIncrease();
+            updateEmptyStates();
+            addRecentPaymentIndicator();
+
+            const navLinks = document.querySelectorAll('.nav a');
+            const sections = {
+                '#tabla': document.getElementById('tabla'),
+                '#servicios': document.getElementById('servicios'),
+                '#ajustes': document.getElementById('ajustes'),
+                '#informes-ai-section': document.getElementById('informes-ai-section'),
+                '#preguntas-frecuentes-section': document.getElementById('preguntas-frecuentes-section'),
+                '#pagar-otro-mes-section': document.getElementById('pagar-otro-mes-section')
+            };
+
+            const updateTopBarTitle = (targetId) => {
+                const titles = {
+                    '#tabla': 'Historial',
+                    '#servicios': 'Pagar', 
+                    '#ajustes': 'Ajustes',
+                    '#edit-services-section': 'Editar Servicios',
+                    '#add-services-section': 'Agregar Servicios',
+                    '#pagar-otro-mes-section': 'Pagar Otro Mes',
+                    '#pay-another-month-section': 'Pagar Otro Mes',
+                    '#informes-ai-section': '¿Qué hay de nuevo?',
+                    '#preguntas-frecuentes-section': 'Preguntas Frecuentes'
+                };
+
+                document.querySelectorAll('.top-bar-title').forEach(title => {
+                    title.classList.remove('visible');
+                });
+
+                const currentTitle = document.querySelector(`[data-section="${targetId}"]`);
+                if (currentTitle) {
+                    currentTitle.classList.add('visible');
+                }
+            };
+
+            const setupArrowNavigations = () => {
+                document.querySelectorAll('.title-arrow').forEach(arrow => {
+                    arrow.addEventListener('click', function(e) {
+                        const currentSection = this.parentElement.getAttribute('data-section');
+
+                        const navigationPaths = {
+                            '#edit-services-section': '#ajustes',
+                            '#add-services-section': '#ajustes',
+                            '#pay-another-month-section': '#servicios',
+                            '#pagar-otro-mes-section': '#servicios',
+                            '#ajustes': '#tabla',
+                            '#servicios': '#tabla',
+                            '#informes-ai-section': '#ajustes',
+                            '#preguntas-frecuentes-section': '#ajustes'
+                        };
+
+                        const targetSection = navigationPaths[currentSection];
+
+                        if (targetSection) {
+                            Object.values(sections).forEach(section => {
+                                section.classList.add('hidden');
+                            });
+
+                            const editSection = document.getElementById('edit-services-section');
+                            const addSection = document.getElementById('add-services-section');
+                            if (editSection) editSection.classList.add('hidden');
+                            if (addSection) {
+                                addSection.remove();
+                            }
+
+                            const targetElement = document.querySelector(targetSection);
+                            if (targetElement) {
+                                targetElement.classList.remove('hidden');
+                            }
+
+                            if (targetSection === '#tabla') {
+                                document.body.classList.add('in-history');
+                                document.querySelector('.top-bar').style.display = 'none';
+                            } else {
+                                document.body.classList.remove('in-history');
+                                document.querySelector('.top-bar').style.display = 'flex';
+                            }
+
+                            updateTopBarTitle(targetSection);
+                            updateNavIndicator(targetSection);
+                        }
+                    });
+                });
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+
+                    Object.values(sections).forEach(section => {
+                        section.classList.add('hidden');
+                    });
+
+                    if (targetId === '#tabla') {
+                        document.body.classList.add('in-history');
+                        document.querySelector('.top-bar').style.display = 'none';
+                    } else {
+                        document.body.classList.remove('in-history');
+                        document.querySelector('.top-bar').style.display = 'flex';
+                    }
+
+                    updateTopBarTitle(targetId);
+                    updateNavIndicator(targetId);
+                    const targetSection = sections[targetId];
+                    if (targetSection) {
+                        targetSection.classList.remove('hidden');
+                    }
+                });
+            });
+
+            if (window.location.hash === '#tabla' || window.location.hash === '') {
+                document.body.classList.add('in-history');
+                document.querySelector('.top-bar').style.display = 'none';
+            }
+
+            sections['#tabla'].classList.remove('hidden');
+            sections['#servicios'].classList.add('hidden');
+            sections['#ajustes'].classList.add('hidden');
+
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                const password = prompt('Ingrese el código para reiniciar (1234):');
+                if (password === '1234') {
+                    const resetOption = confirm('¿Desea borrar todo (servicios y pagos)?\nPresione OK para borrar todo, o Cancelar para borrar solo los pagos.');
+                    
+                    if (resetOption) {
+                        if (confirm('¿Está seguro que desea reiniciar todo? Esta acción no se puede deshacer.')) {
+                            localStorage.removeItem('servicesData');
+                            document.getElementById('service-list').innerHTML = '';
+                            document.getElementById('paid-service-list').innerHTML = '';
+                            document.getElementById('services-table-body').innerHTML = '';
+                            document.getElementById('summary-table-body').innerHTML = '';
+                            const totalRow = document.getElementById('monthly-totals');
+                            totalRow.innerHTML = '<td>Total</td>' + Array(12).fill('<td>-</td>').join('');
+                            const progressBar = document.querySelector('.progress-bar');
+                            const progressText = document.querySelector('.progress-text');
+                            progressBar.style.width = '0%';
+                            progressText.textContent = '0 servicios por pagar este mes';
+                            document.getElementById('edit-services-section').innerHTML = '';
+                            updateEmptyStates();
+                            alert('Todo ha sido reiniciado exitosamente.');
+                        }
+                    } else {
+                        if (confirm('¿Está seguro que desea borrar solo los pagos? Esta acción no se puede deshacer.')) {
+                            const serviceCards = document.querySelectorAll('#paid-service-list .service-card');
+                            const serviceList = document.getElementById('service-list');
+                            
+                            serviceCards.forEach(card => {
+                                card.classList.remove('paid');
+                                const checkmark = card.querySelector('.paid-check');
+                                if (checkmark) checkmark.remove();
+                                if (!card.querySelector('.pay-btn')) {
+                                    addPayButtonToServiceCard(card, card.childNodes[0].textContent.trim());
+                                }
+                                serviceList.appendChild(card);
+                            });
+                            
+                            const rows = document.getElementById('services-table-body').children;
+                            Array.from(rows).forEach(row => {
+                                for (let i = 1; i < row.children.length; i++) {
+                                    row.children[i].textContent = '-';
+                                }
+                            });
+                            
+                            document.getElementById('summary-table-body').innerHTML = '';
+                            
+                            const totalRow = document.getElementById('monthly-totals');
+                            totalRow.innerHTML = '<td>Total</td>' + Array(12).fill('<td>-</td>').join('');
+                            
+                            saveData();
+                            updateProgress();
+                            updateEmptyStates();
+                            
+                            alert('Los pagos han sido reiniciados exitosamente.');
+                        }
+                    }
+                } else {
+                    alert('Código incorrecto.');
+                }
+            });
+
+            document.getElementById('add-service-btn').addEventListener('click', function() {
+                const addServicesSection = document.createElement('div');
+                addServicesSection.id = 'add-services-section';
+                
+                updateTopBarTitle('#add-services-section');
+
+                const form = document.createElement('div');
+                form.className = 'service-form';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = 'Nombre del servicio';
+                input.autofocus = true; 
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+
+                const submitBtn = document.createElement('button');
+                submitBtn.className = 'add-service-btn';
+                submitBtn.textContent = 'Agregar';
+                submitBtn.onclick = () => {
+                    const serviceName = input.value.trim();
+                    if (serviceName) {
+                        const existingServices = Array.from(document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card'))
+                            .map(card => card.childNodes[0].textContent.trim().toLowerCase());
+                        
+                        if (existingServices.includes(serviceName.toLowerCase())) {
+                            alert('Ya existe un servicio con ese nombre');
+                            input.focus();
+                            return;
+                        }
+                        
+                        const serviceCard = originalCreateServiceCard(serviceName);
+                        document.getElementById('service-list').appendChild(serviceCard);
+                        addServicesSection.remove();
+                        
+                        Object.values(sections).forEach(section => {
+                            section.classList.add('hidden');
+                        });
+                        document.getElementById('ajustes').classList.remove('hidden');
+                        updateTopBarTitle('#ajustes');
+                        
+                        saveData();
+                        populateServiceDropdown();
+                        updateProgress();
+                        updateEmptyStates();
+                    }
+                };
+                
+                form.appendChild(input);
+                form.appendChild(submitBtn);
+                addServicesSection.appendChild(form);
+                
+                document.body.appendChild(addServicesSection);
+                setTimeout(() => input.focus(), 0);
+            });
+
+            document.getElementById('edit-services-btn').addEventListener('click', function() {
+                const editSection = document.getElementById('edit-services-section');
+                editSection.classList.remove('hidden');
+                editSection.innerHTML = '';
+
+                updateTopBarTitle('#edit-services-section');
+
+                const services = document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card');
+                
+                if (services.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.innerHTML = `
+                        <img src="https://img.icons8.com/fluency/96/empty-box.png" alt="empty box">
+                        <p>No hay servicios cargados.<br>Agrega servicios desde la sección Ajustes.</p>
+                    `;
+                    editSection.appendChild(emptyState);
+                    return;
+                }
+
+                services.forEach(service => {
+                    const serviceCard = document.createElement('div');
+                    serviceCard.className = 'service-card';
+                    serviceCard.textContent = service.childNodes[0].textContent;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = 'Eliminar';
+                    deleteBtn.onclick = () => {
+                        const modalOverlay = document.createElement('div');
+                        modalOverlay.className = 'modal-overlay';
+
+                        const modalContent = document.createElement('div');
+                        modalContent.className = 'modal-content';
+
+                        modalContent.innerHTML = `
+                            <h3 style="margin: 0 0 15px 0; font-size: 16px;">¿Cómo desea eliminar el servicio?</h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="delete-all-btn">Eliminar servicio y datos</button>
+                                <button class="delete-service-btn">Eliminar solo servicio</button>
+                                <button class="cancel-btn">Cancelar</button>
+                            </div>
+                        `;
+
+                        const [deleteAllBtn, deleteServiceBtn, cancelBtn] = modalContent.querySelectorAll('button');
+
+                        deleteAllBtn.onclick = () => {
+                            const serviceName = service.childNodes[0].textContent.trim();
+                            
+                            const row = Array.from(document.querySelectorAll('#services-table-body tr'))
+                                .find(r => r.firstChild.textContent.trim() === serviceName);
+                            if (row) row.remove();
+                            
+                            const summaryRow = Array.from(document.querySelectorAll('#summary-table-body tr'))
+                                .find(r => r.firstChild.textContent.trim() === serviceName);
+                            if (summaryRow) summaryRow.remove();
+                            
+                            service.remove();
+                            serviceCard.remove();
+                            
+                            saveData();
+                            populateServiceDropdown();
+                            calculateMonthlyTotals();
+                            updateCurrentMonthSummaryTable();
+                            updateProgress();
+                            updateEmptyStates();
+                            modalOverlay.remove();
+                        };
+
+                        deleteServiceBtn.onclick = () => {
+                            const serviceName = service.childNodes[0].textContent.trim();
+                            const row = Array.from(document.querySelectorAll('#services-table-body tr'))
+                                .find(r => r.firstChild.textContent.trim() === serviceName);
+                            if (row) row.remove();
+
+                            service.remove();
+                            serviceCard.remove();
+                            saveData();
+                            populateServiceDropdown();
+                            updateEmptyStates();
+                            modalOverlay.remove();
+                        };
+                        
+                        cancelBtn.onclick = () => {
+                            modalOverlay.remove();
+                        };
+
+                        modalOverlay.appendChild(modalContent);
+                        document.body.appendChild(modalOverlay);
+                    };
+                    
+                    serviceCard.appendChild(deleteBtn);
+                    editSection.appendChild(serviceCard);
+                });
+            });
+
+            document.getElementById('pay-another-month-btn').addEventListener('click', function() {
+                const section = document.getElementById('pay-another-month-dropdown');
+                section.innerHTML = '';
+
+                document.querySelectorAll('.top-bar-title').forEach(title => {
+                    title.classList.remove('visible');
+                });
+                document.querySelector('.top-bar-title[data-section="#pagar-otro-mes-section"]').classList.add('visible');
+
+                const selectService = document.createElement('select');
+                selectService.id = 'select-service';
+                selectService.innerHTML = '<option value="">Seleccionar servicio</option>';
+                
+                const selectMonth = document.createElement('select');
+                selectMonth.id = 'select-month';
+                selectMonth.innerHTML = `
+                    <option value="">Seleccionar mes</option>
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                `;
+                
+                const amountInput = document.createElement('input');
+                amountInput.type = 'text'; 
+                amountInput.id = 'select-service-amount';
+                amountInput.className = 'amount-input';
+                amountInput.placeholder = 'Monto a pagar';
+                amountInput.inputMode = 'numeric'; 
+                amountInput.pattern = '[0-9]*';    
+                amountInput.addEventListener('input', () => formatNumber(amountInput));
+
+                const saveButton = document.createElement('button');
+                saveButton.id = 'save-month-payment-btn';
+                saveButton.textContent = 'Guardar Pago';
+                
+                section.appendChild(selectService);
+                section.appendChild(selectMonth);
+                section.appendChild(amountInput);
+                section.appendChild(saveButton);
+                
+                document.getElementById('pay-another-month-section').classList.add('hidden');
+                const newSection = document.getElementById('pagar-otro-mes-section');
+                newSection.classList.remove('hidden');
+                populateServiceDropdown();
+                selectService.focus();
+
+                saveButton.addEventListener('click', function() {
+                    const serviceName = document.getElementById('select-service').value;
+                    const monthIndex = parseInt(document.getElementById('select-month').value);
+                    const amount = document.getElementById('select-service-amount').value.replace(/,/g, '');
+                    
+                    if (!serviceName || isNaN(monthIndex) || !amount) {
+                        alert('Por favor, complete todos los campos');
+                        return;
+                    }
+
+                    let existingRow = Array.from(document.querySelectorAll('#services-table-body tr'))
+                        .find(row => row.firstChild.textContent.trim() === serviceName.trim());
+                    
+                    if (!existingRow) {
+                        existingRow = document.createElement('tr');
+                        const serviceNameTd = document.createElement('td');
+                        serviceNameTd.textContent = serviceName;
+                        existingRow.appendChild(serviceNameTd);
+                        for (let i = 0; i < 12; i++) {
+                            const monthTd = document.createElement('td');
+                            monthTd.textContent = '-';
+                            existingRow.appendChild(monthTd);
+                        }
+                        document.getElementById('services-table-body').appendChild(existingRow);
+                    }
+
+                    updateTableCell(existingRow, monthIndex, amount);
+                    saveData();
+                    resetInputs();
+                    newSection.classList.add('hidden');
+                    calculateMonthlyTotals();
+                    updateCurrentMonthSummaryTable();
+                    updateProgress();
+                    addRecentPaymentIndicator();
+                });
+                
+                selectMonth.addEventListener('change', function() {
+                    const amountInput = document.getElementById('select-service-amount');
+                    if (this.value !== '') {
+                        setTimeout(() => amountInput.focus(), 100); // Focus and slight delay for smooth transition
+                    }
+                });
+            });
+
+            const searchInput = document.querySelector('.search-input');
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#services-table-body tr');
+                
+                rows.forEach(row => {
+                    const serviceName = row.querySelector('td:first-child').textContent.toLowerCase();
+                    if (serviceName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                const summaryRows = document.querySelectorAll('#summary-table-body tr');
+                summaryRows.forEach(row => {
+                    const serviceName = row.querySelector('td:first-child').textContent.toLowerCase();
+                    if (serviceName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            const paySectionSearch = document.getElementById('pay-section-search');
+            if (paySectionSearch) {
+                paySectionSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const serviceCards = document.querySelectorAll('#service-list .service-card, #paid-service-list .service-card');
+                    
+                    serviceCards.forEach(card => {
+                        const serviceName = card.childNodes[0].textContent.toLowerCase();
+                        if (serviceName.includes(searchTerm)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            searchInput.addEventListener('focus', () => {
+                setTimeout(() => {
+                    const tableContainer = document.querySelector('.summary-table-container');
+                    tableContainer.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            });
+
+            setupArrowNavigations();
+
+            document.getElementById('informes-ai-btn').addEventListener('click', function() {
+                Object.values(sections).forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.body.classList.remove('in-history');
+                document.querySelector('.top-bar').style.display = 'flex';
+                updateTopBarTitle('#informes-ai-section');
+
+                const aiSection = document.getElementById('informes-ai-section');
+                aiSection.classList.remove('hidden');
+            });
+
+            document.getElementById('preguntas-frecuentes-btn').addEventListener('click', function() {
+                Object.values(sections).forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.body.classList.remove('in-history');
+                document.querySelector('.top-bar').style.display = 'flex';
+                updateTopBarTitle('#preguntas-frecuentes-section');
+
+                const faqSection = document.getElementById('preguntas-frecuentes-section');
+                faqSection.classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
